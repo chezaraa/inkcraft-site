@@ -2,14 +2,14 @@
   const WA = '34624530362';
   const waLink = (text) => `https://wa.me/${WA}?text=${encodeURIComponent(text)}`;
   const T = {
-    ru: { hi: 'Здравствуйте!', src: '(с сайта)', quiz: 'Здравствуйте! Прошёл опросник на сайте:', q: (n, t) => `Вопрос ${n} из ${t}`, all: 'Все ответы' },
-    es: { hi: 'Hola.', src: '(desde la web)', quiz: 'Hola, he rellenado el cuestionario de la web:', q: (n, t) => `Pregunta ${n} de ${t}`, all: 'Todas las respuestas' },
-    en: { hi: 'Hello.', src: '(from the website)', quiz: 'Hello, I filled in the questionnaire on your website:', q: (n, t) => `Question ${n} of ${t}`, all: 'All answers' },
-  }[document.documentElement.lang] || null;
-  const L = T || { hi: 'Здравствуйте!', src: '(с сайта)', quiz: 'Здравствуйте! Прошёл опросник на сайте:', q: (n, t) => `Вопрос ${n} из ${t}`, all: 'Все ответы' };
+    ru: { quiz: 'Здравствуйте! Вот мои ответы на опросник:', q: (n, t) => `Вопрос ${n} из ${t}`, all: 'Все ответы', close: 'Закрыть', prev: 'Предыдущее фото', next: 'Следующее фото' },
+    es: { quiz: 'Hola, estas son mis respuestas al cuestionario:', q: (n, t) => `Pregunta ${n} de ${t}`, all: 'Todas las respuestas', close: 'Cerrar', prev: 'Foto anterior', next: 'Foto siguiente' },
+    en: { quiz: 'Hello, here are my answers to the questionnaire:', q: (n, t) => `Question ${n} of ${t}`, all: 'All answers', close: 'Close', prev: 'Previous photo', next: 'Next photo' },
+  };
+  const L = T[document.documentElement.lang] || T.ru;
 
   // WhatsApp-ссылки с готовым текстом
-  document.querySelectorAll('[data-wa]').forEach((a) => { a.href = waLink(`${L.hi} ${a.dataset.wa} ${L.src}`); });
+  document.querySelectorAll('[data-wa]').forEach((a) => { a.href = waLink(a.dataset.wa); });
 
   // Было / стало: ползунок
   document.querySelectorAll('[data-ba]').forEach((box) => {
@@ -75,6 +75,57 @@
       sticky.classList.toggle('is-on', hide.size === 0);
     }, { threshold: 0.1 });
     Object.entries(watch).forEach(([k, el]) => { if (el) { el.dataset.watch = k; io.observe(el); } });
+  }
+
+  // Галереи «Наши работы»: полный экран, своя серия у каждой карточки
+  const cards = document.querySelectorAll('figure[data-photos]');
+  if (cards.length) {
+    const box = document.createElement('div');
+    box.className = 'lb'; box.hidden = true;
+    box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
+    box.innerHTML = `<button class="lb__close" type="button" aria-label="${L.close}">×</button>
+      <button class="lb__nav lb__nav--prev" type="button" aria-label="${L.prev}">‹</button>
+      <img class="lb__img" alt="">
+      <button class="lb__nav lb__nav--next" type="button" aria-label="${L.next}">›</button>
+      <p class="lb__cap"></p>`;
+    document.body.appendChild(box);
+    const img = box.querySelector('.lb__img'), cap = box.querySelector('.lb__cap');
+    const prevB = box.querySelector('.lb__nav--prev'), nextB = box.querySelector('.lb__nav--next');
+    let list = [], k = 0, title = '', last = null;
+    const draw = () => {
+      img.src = list[k];
+      cap.textContent = list.length > 1 ? `${title} · ${k + 1} / ${list.length}` : title;
+      prevB.hidden = nextB.hidden = list.length < 2;
+      if (list[k + 1]) new Image().src = list[k + 1];
+    };
+    const go = (d) => { if (list.length > 1) { k = (k + d + list.length) % list.length; draw(); } };
+    const open = (fig) => {
+      const base = fig.querySelector('img').getAttribute('src').replace(/[^/]+$/, '') + 'gal/';
+      list = fig.dataset.photos.split(' ').map((n) => base + n + '.webp');
+      title = fig.querySelector('figcaption').textContent; k = 0; last = fig;
+      draw(); box.hidden = false; document.documentElement.classList.add('lb-open');
+      box.querySelector('.lb__close').focus();
+    };
+    const close = () => { box.hidden = true; document.documentElement.classList.remove('lb-open'); img.removeAttribute('src'); if (last) last.focus(); };
+    cards.forEach((fig) => {
+      fig.addEventListener('click', () => open(fig));
+      fig.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(fig); } });
+    });
+    box.querySelector('.lb__close').addEventListener('click', close);
+    prevB.addEventListener('click', (e) => { e.stopPropagation(); go(-1); });
+    nextB.addEventListener('click', (e) => { e.stopPropagation(); go(1); });
+    box.addEventListener('click', (e) => { if (e.target === box) close(); });
+    document.addEventListener('keydown', (e) => {
+      if (box.hidden) return;
+      if (e.key === 'Escape') close(); else if (e.key === 'ArrowLeft') go(-1); else if (e.key === 'ArrowRight') go(1);
+    });
+    let sx = 0, sy = 0;
+    box.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+    box.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? 1 : -1);
+      else if (dy > 80 && Math.abs(dy) > Math.abs(dx)) close();
+    }, { passive: true });
   }
 
   const y = document.getElementById('year');
