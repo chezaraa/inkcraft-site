@@ -1,115 +1,82 @@
 (() => {
-  const WA_NUMBER = '34624530362';
+  const WA = '34624530362';
+  const waLink = (text) => `https://wa.me/${WA}?text=${encodeURIComponent(text)}`;
+  const T = {
+    ru: { hi: 'Здравствуйте!', src: '(с сайта)', quiz: 'Здравствуйте! Прошёл опросник на сайте:', q: (n, t) => `Вопрос ${n} из ${t}`, all: 'Все ответы' },
+    es: { hi: 'Hola.', src: '(desde la web)', quiz: 'Hola, he rellenado el cuestionario de la web:', q: (n, t) => `Pregunta ${n} de ${t}`, all: 'Todas las respuestas' },
+    en: { hi: 'Hello.', src: '(from the website)', quiz: 'Hello, I filled in the questionnaire on your website:', q: (n, t) => `Question ${n} of ${t}`, all: 'All answers' },
+  }[document.documentElement.lang] || null;
+  const L = T || { hi: 'Здравствуйте!', src: '(с сайта)', quiz: 'Здравствуйте! Прошёл опросник на сайте:', q: (n, t) => `Вопрос ${n} из ${t}`, all: 'Все ответы' };
 
-  // WhatsApp-ссылки с готовым текстом сообщения
-  document.querySelectorAll('[data-wa]').forEach((a) => {
-    const text = `Здравствуйте! ${a.dataset.wa}`;
-    a.href = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
+  // WhatsApp-ссылки с готовым текстом
+  document.querySelectorAll('[data-wa]').forEach((a) => { a.href = waLink(`${L.hi} ${a.dataset.wa} ${L.src}`); });
+
+  // Было / стало: ползунок
+  document.querySelectorAll('[data-ba]').forEach((box) => {
+    const r = box.querySelector('.ba__range');
+    const set = () => box.style.setProperty('--pos', r.value + '%');
+    r.addEventListener('input', set); set();
   });
 
-  // Шапка: фон при прокрутке
-  const header = document.querySelector('.header');
-  const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 20);
-  onScroll();
-  window.addEventListener('scroll', onScroll, { passive: true });
-
-  // Мобильное меню
-  const burger = document.querySelector('.burger');
-  const nav = document.getElementById('nav');
-  const setMenu = (open) => {
-    burger.setAttribute('aria-expanded', String(open));
-    burger.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
-    nav.classList.toggle('is-open', open);
-    if (open) header.classList.add('is-scrolled'); else onScroll();
-  };
-  burger.addEventListener('click', () => setMenu(burger.getAttribute('aria-expanded') !== 'true'));
-  nav.addEventListener('click', (e) => { if (e.target.closest('a')) setMenu(false); });
-
-  // Фиксированная кнопка WhatsApp: видна после первого экрана, скрыта у финального CTA
-  const sticky = document.querySelector('.sticky-wa');
-  const hero = document.querySelector('.hero');
-  const final = document.querySelector('.final');
-  if ('IntersectionObserver' in window) {
-    const state = { hero: true, final: false };
-    const update = () => sticky.classList.toggle('is-visible', !state.hero && !state.final);
-    new IntersectionObserver(([e]) => { state.hero = e.isIntersecting; update(); }, { threshold: 0.15 }).observe(hero);
-    new IntersectionObserver(([e]) => { state.final = e.isIntersecting; update(); }, { threshold: 0.2 }).observe(final);
-  } else {
-    sticky.classList.add('is-visible');
-  }
-
-  // До / Процесс / После
-  const LABELS = { before: 'До', process: 'Процесс', after: 'После' };
-  const ORDER = ['before', 'process', 'after'];
-  document.querySelectorAll('[data-case]').forEach((c) => {
-    const frames = c.querySelectorAll('[data-step]');
-    const tabs = c.querySelectorAll('[data-go]');
-    const badge = c.querySelector('.case__badge');
-    let current = 'after';
-    const show = (step) => {
-      current = step;
-      frames.forEach((f) => f.classList.toggle('is-active', f.dataset.step === step));
-      tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.go === step)));
-      badge.textContent = LABELS[step];
-      badge.dataset.step = step;
+  // Опросник: по одному вопросу, автопереход после выбора
+  const quiz = document.getElementById('quiz');
+  if (quiz) {
+    const steps = [...quiz.querySelectorAll('fieldset.q')];
+    const final = quiz.querySelector('[data-final]');
+    const bar = document.getElementById('quizBar');
+    const count = document.getElementById('quizCount');
+    const back = document.getElementById('quizBack');
+    const sum = document.getElementById('quizSum');
+    // Ветки: вопросы с data-for показываются только для выбранного варианта в первом вопросе
+    let path = steps.filter((s) => !s.dataset.for);
+    let i = 0;
+    const branch = () => { const c = steps[0].querySelector('input:checked'); return c ? c.dataset.branch : 'flat'; };
+    const rebuild = () => {
+      const b = branch();
+      path = steps.filter((s) => !s.dataset.for || (b && s.dataset.for.split(' ').includes(b)));
     };
-    tabs.forEach((t) => t.addEventListener('click', () => show(t.dataset.go)));
-    show(current);
-
-    // Свайп по фото
-    const stage = c.querySelector('.case__stage');
-    let x0 = null;
-    stage.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
-    stage.addEventListener('touchend', (e) => {
-      if (x0 === null) return;
-      const dx = e.changedTouches[0].clientX - x0;
-      x0 = null;
-      if (Math.abs(dx) < 40) return;
-      const i = ORDER.indexOf(current) + (dx < 0 ? 1 : -1);
-      if (i >= 0 && i < ORDER.length) show(ORDER[i]);
+    const answers = () => path.map((s) => {
+      const c = s.querySelector('input:checked');
+      return [s.dataset.q, c ? c.value : '—'];
     });
-  });
-
-  // Фильтр галереи
-  const chips = document.querySelectorAll('.chip');
-  const items = document.querySelectorAll('.gallery li');
-  chips.forEach((chip) => chip.addEventListener('click', () => {
-    chips.forEach((c) => c.classList.toggle('is-active', c === chip));
-    const f = chip.dataset.filter;
-    items.forEach((li) => { li.hidden = f !== 'all' && li.dataset.cat !== f; });
-  }));
-
-  // Просмотр фото
-  const lb = document.querySelector('.lightbox');
-  if (lb && typeof lb.showModal === 'function') {
-    const lbImg = lb.querySelector('img');
-    document.querySelector('.gallery').addEventListener('click', (e) => {
-      const img = e.target.closest('.media')?.querySelector('img');
-      if (!img) return;
-      lbImg.src = img.currentSrc || img.src;
-      lbImg.alt = img.alt;
-      lb.showModal();
+    const show = (n) => {
+      i = n;
+      const total = path.length;
+      steps.forEach((s) => s.classList.toggle('is-active', s === path[n]));
+      const done = n >= total;
+      final.classList.toggle('is-active', done);
+      bar.style.width = (done ? 100 : ((n + 1) / total) * 100) + '%';
+      count.textContent = done ? L.all : L.q(n + 1, total);
+      back.hidden = n === 0;
+      if (done) sum.innerHTML = answers().map(([k, v]) => `<li><b>${k}:</b> ${v}</li>`).join('');
+    };
+    steps.forEach((s) => s.addEventListener('change', () => {
+      if (s === steps[0]) rebuild();
+      setTimeout(() => show(path.indexOf(s) + 1), 180);
+    }));
+    back.addEventListener('click', () => show(Math.max(0, i - 1)));
+    rebuild();
+    quiz.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = L.quiz + '\n' + answers().map(([k, v]) => `• ${k}: ${v}`).join('\n');
+      window.open(waLink(text), '_blank', 'noopener');
     });
-    lb.addEventListener('click', (e) => { if (e.target === lb || e.target.closest('.lightbox__close')) lb.close(); });
+    show(0);
   }
 
-  // Отзывы: показываем блок, только если есть настоящие отзывы
-  const reviews = document.getElementById('reviews');
-  if (reviews && reviews.querySelector('.review')) reviews.hidden = false;
-
-  // Соцсети без ссылки не показываем
-  document.querySelectorAll('[data-social]').forEach((a) => {
-    if (!a.getAttribute('href') || a.getAttribute('href') === '#') a.hidden = true;
-  });
-
-  // Плавное появление блоков
-  const revealTargets = document.querySelectorAll('.section__head, .service, .case, .stat, .trust li, .remote__text, .remote__visual, .process li, .final__inner');
-  if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  // Кнопка WhatsApp на телефоне появляется после первого экрана
+  const sticky = document.querySelector('.sticky');
+  const hero = document.querySelector('.hero');
+  if (sticky && hero && 'IntersectionObserver' in window) {
+    const hide = new Set(['hero']);
+    const watch = { hero, calc: document.getElementById('calc'), final: document.querySelector('.final') };
     const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
-    }, { rootMargin: '0px 0px -8% 0px' });
-    revealTargets.forEach((el) => { el.classList.add('reveal'); io.observe(el); });
+      entries.forEach((e) => { const k = e.target.dataset.watch; if (e.isIntersecting) hide.add(k); else hide.delete(k); });
+      sticky.classList.toggle('is-on', hide.size === 0);
+    }, { threshold: 0.1 });
+    Object.entries(watch).forEach(([k, el]) => { if (el) { el.dataset.watch = k; io.observe(el); } });
   }
 
-  document.getElementById('year').textContent = new Date().getFullYear();
+  const y = document.getElementById('year');
+  if (y) y.textContent = new Date().getFullYear();
 })();
