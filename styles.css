@@ -266,3 +266,4 @@ figure[data-photos]:focus-visible { outline: 3px solid var(--accent); outline-of
 .case__t { display: block; padding: 18px 20px 4px; font-weight: 800; font-size: 20px; }
 .case__d { display: block; padding: 0 20px 20px; color: var(--muted); font-size: 15px; }
 @media (min-width: 760px) { .cases { grid-template-columns: repeat(3, 1fr); } }
+.price-tag--text { font-size: 17px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
