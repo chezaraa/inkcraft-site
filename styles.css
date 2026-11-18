@@ -258,3 +258,11 @@ figure[data-photos]:focus-visible { outline: 3px solid var(--accent); outline-of
 .areas { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 10px; }
 .areas li { background: var(--card); border: 1px solid var(--line); border-radius: 99px; padding: 10px 18px; font-weight: 600; font-size: 15px; }
 .muted a { color: var(--accent-dark); font-weight: 600; text-decoration: none; }
+.links-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.links-list a { color: var(--accent-dark); font-weight: 700; text-decoration: none; font-size: 18px; }
+.cases { display: grid; gap: 16px; }
+.case { display: block; background: var(--card); border-radius: var(--radius); overflow: hidden; text-decoration: none; border: 1px solid var(--line); }
+.case img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+.case__t { display: block; padding: 18px 20px 4px; font-weight: 800; font-size: 20px; }
+.case__d { display: block; padding: 0 20px 20px; color: var(--muted); font-size: 15px; }
+@media (min-width: 760px) { .cases { grid-template-columns: repeat(3, 1fr); } }
