@@ -288,3 +288,4 @@ figure[data-photos]:focus-visible { outline: 3px solid var(--accent); outline-of
 .articles a { display: block; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; text-decoration: none; }
 .articles b { display: block; font-size: 20px; color: var(--ink); }
 .articles span { display: block; color: var(--muted); font-size: 15px; font-weight: 500; margin-top: 6px; }
+.areas a { color: var(--accent-dark); text-decoration: none; }
