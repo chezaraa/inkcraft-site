@@ -231,3 +231,25 @@ figure[data-photos]:focus-visible { outline: 3px solid var(--accent); outline-of
 .lb__nav[hidden] { display: none; }
 .lb__nav--prev { left: 8px; } .lb__nav--next { right: 8px; }
 .lb-open, .lb-open body { overflow: hidden; }
+
+/* страницы услуг */
+.crumbs { padding-top: 16px; font-size: 13px; color: var(--muted); }
+.crumbs a { color: var(--muted); }
+.crumbs span[aria-current] { color: var(--ink); }
+.price-tag { margin-top: 22px; font-size: clamp(30px, 4vw, 40px); font-weight: 800; letter-spacing: -.02em; }
+.price-tag span { font-size: .5em; font-weight: 700; color: var(--muted); margin-right: 4px; }
+.price-tag small { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+.plans { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+.plans > li { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
+.plans__main { border: 2px solid var(--accent) !important; }
+.plans__badge { position: absolute; top: -12px; left: 24px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 99px; }
+.plans__price { font-size: 30px; font-weight: 800; margin-top: 10px; letter-spacing: -.02em; }
+.plans__time { color: var(--muted); font-size: 15px; font-weight: 600; }
+.plans ul { margin: 16px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 16px; }
+.plans__for { margin-top: 16px; font-size: 14px; color: var(--muted); }
+@media (min-width: 760px) { .plans { grid-template-columns: repeat(3, 1fr); } }
+.works--row { columns: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.works--row .w { margin: 0; }
+.works--row .w img { aspect-ratio: 4 / 5; height: 100%; }
+@media (min-width: 760px) { .works--row { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+.pair--tall img { aspect-ratio: 4 / 5; }
