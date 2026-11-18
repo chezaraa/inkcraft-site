@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <title>WhatsApp click</title>
+</head>
+<body>
+<script>
+  // Служебная страница: открывается невидимо при нажатии на WhatsApp, чтобы счётчик посчитал заявку.
+  (function () {
+    var m = (parent && parent.document && parent.document.scripts) ? [].slice.call(parent.document.scripts) : [];
+    var b = m.filter(function (s) { return s.getAttribute('data-cf-beacon'); })[0];
+    if (!b) return;
+    var sc = document.createElement('script');
+    sc.defer = true;
+    sc.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+    sc.setAttribute('data-cf-beacon', b.getAttribute('data-cf-beacon'));
+    document.body.appendChild(sc);
+  })();
+</script>
+</body>
+</html>

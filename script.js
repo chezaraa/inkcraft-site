@@ -8,6 +8,30 @@
   };
   const L = T[document.documentElement.lang] || T.ru;
 
+
+  // Статистика: Cloudflare Web Analytics (без cookies, баннер не нужен)
+  const CF_TOKEN = '86b8ef4d6da44689a3b7cf97aef93d0c';
+  const cfBeacon = (doc) => {
+    if (!CF_TOKEN) return;
+    const sc = doc.createElement('script');
+    sc.defer = true;
+    sc.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+    sc.setAttribute('data-cf-beacon', JSON.stringify({ token: CF_TOKEN }));
+    doc.body.appendChild(sc);
+  };
+  cfBeacon(document);
+  // Нажатие на WhatsApp считаем как просмотр служебной страницы /wa/
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('a[href^="https://wa.me"]');
+    if (!a || !CF_TOKEN) return;
+    const f = document.createElement('iframe');
+    f.src = '/wa/';
+    f.hidden = true;
+    f.setAttribute('aria-hidden', 'true');
+    f.tabIndex = -1;
+    document.body.appendChild(f);
+  }, true);
+
   // WhatsApp-ссылки с готовым текстом
   document.querySelectorAll('[data-wa]').forEach((a) => { a.href = waLink(a.dataset.wa); });
 
