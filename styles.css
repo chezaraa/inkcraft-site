@@ -267,3 +267,24 @@ figure[data-photos]:focus-visible { outline: 3px solid var(--accent); outline-of
 .case__d { display: block; padding: 0 20px 20px; color: var(--muted); font-size: 15px; }
 @media (min-width: 760px) { .cases { grid-template-columns: repeat(3, 1fr); } }
 .price-tag--text { font-size: 17px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+/* статьи */
+.article { padding-top: 28px; padding-bottom: 72px; }
+.article h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 800; }
+.article__lead { font-size: 19px; color: var(--muted); margin-top: 18px; }
+.article h2 { font-size: clamp(24px, 3.4vw, 32px); margin: 44px 0 14px; }
+.article p, .article li { font-size: 17px; line-height: 1.65; }
+.article p + p { margin-top: 12px; }
+.article ul, .article ol { padding-left: 22px; display: grid; gap: 10px; margin: 12px 0; }
+.article a { color: var(--accent-dark); font-weight: 600; }
+.article__answer { margin-top: 28px; background: var(--card); border-left: 4px solid var(--accent); border-radius: 12px; padding: 20px 22px; font-size: 17px; line-height: 1.6; }
+.table-wrap { overflow-x: auto; margin: 14px 0; }
+.table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; font-size: 15px; min-width: 560px; }
+.table th, .table td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.table th { background: var(--soft); font-weight: 700; }
+.article__cta { margin-top: 48px; background: var(--dark); color: #f3eee7; border-radius: var(--radius); padding: 28px; }
+.article__cta h2 { color: #fff; margin: 0 0 10px; }
+.article__cta p { color: #cfc6ba; margin-bottom: 18px; }
+.articles { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 14px; }
+.articles a { display: block; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; text-decoration: none; }
+.articles b { display: block; font-size: 20px; color: var(--ink); }
+.articles span { display: block; color: var(--muted); font-size: 15px; font-weight: 500; margin-top: 6px; }
