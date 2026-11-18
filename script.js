@@ -20,10 +20,67 @@
     doc.body.appendChild(sc);
   };
   cfBeacon(document);
-  // Нажатие на WhatsApp считаем как просмотр служебной страницы /wa/
+
+  // Google Реклама: тег грузится только после согласия на cookies.
+  // Конверсия «Контакт» — нажатие WhatsApp, телефона или отправка опросника.
+  const AW_ID = 'AW-18583274287';
+  const AW_LEAD = AW_ID + '/0OxpCIq2gbsdEK-GmZ1F';
+  const CONSENT_KEY = 'ink_consent';
+  const CT = {
+    ru: { text: 'Мы используем cookies Google Рекламы, чтобы понимать, какая реклама приводит к нам клиентов.', yes: 'Принять', no: 'Отказаться' },
+    es: { text: 'Usamos cookies de Google Ads para saber qué anuncios nos traen clientes.', yes: 'Aceptar', no: 'Rechazar' },
+    en: { text: 'We use Google Ads cookies to see which ads bring us clients.', yes: 'Accept', no: 'Decline' },
+  };
+  const CL = CT[document.documentElement.lang] || CT.ru;
+  const store = {
+    get: () => { try { return localStorage.getItem(CONSENT_KEY); } catch (e) { return null; } },
+    set: (v) => { try { localStorage.setItem(CONSENT_KEY, v); } catch (e) { /* без хранилища — спросим снова */ } },
+  };
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { window.dataLayer.push(arguments); }
+  let awOn = false;
+  const awLoad = () => {
+    if (awOn) return;
+    awOn = true;
+    gtag('consent', 'default', { ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'denied', analytics_storage: 'denied' });
+    gtag('js', new Date());
+    gtag('config', AW_ID);
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + AW_ID;
+    document.head.appendChild(s);
+  };
+  const lead = () => { if (awOn) gtag('event', 'conversion', { send_to: AW_LEAD }); };
+  const consent = store.get();
+  if (consent === 'yes') awLoad();
+  else if (consent !== 'no') {
+    const st = document.createElement('style');
+    st.textContent = '.ck{position:fixed;left:12px;right:12px;bottom:12px;z-index:1000;max-width:560px;margin:0 auto;padding:14px 16px;background:#1d1d1b;color:#fff;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.25);font-size:14px;line-height:1.45;display:flex;flex-wrap:wrap;gap:10px;align-items:center}.ck p{margin:0;flex:1 1 240px}.ck button{font:inherit;border:0;border-radius:8px;padding:9px 16px;cursor:pointer}.ck__yes{background:#fff;color:#1d1d1b;font-weight:600}.ck__no{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)!important}';
+    document.head.appendChild(st);
+    const bar = document.createElement('div');
+    bar.className = 'ck';
+    bar.setAttribute('role', 'region');
+    bar.setAttribute('aria-label', 'Cookies');
+    const p = document.createElement('p'); p.textContent = CL.text;
+    const yes = document.createElement('button'); yes.type = 'button'; yes.className = 'ck__yes'; yes.textContent = CL.yes;
+    const no = document.createElement('button'); no.type = 'button'; no.className = 'ck__no'; no.textContent = CL.no;
+    bar.append(p, no, yes);
+    document.body.appendChild(bar);
+    yes.addEventListener('click', () => { store.set('yes'); bar.remove(); awLoad(); });
+    no.addEventListener('click', () => { store.set('no'); bar.remove(); });
+  }
+
+  // Нажатие на телефон — конверсия в Google Рекламе
+  document.addEventListener('click', (e) => {
+    if (e.target.closest && e.target.closest('a[href^="tel:"]')) lead();
+  }, true);
+
+  // Нажатие на WhatsApp: конверсия в Google Рекламе + просмотр служебной страницы /wa/ для Cloudflare
   document.addEventListener('click', (e) => {
     const a = e.target.closest && e.target.closest('a[href^="https://wa.me"]');
-    if (!a || !CF_TOKEN) return;
+    if (!a) return;
+    lead();
+    if (!CF_TOKEN) return;
     const f = document.createElement('iframe');
     f.src = '/wa/';
     f.hidden = true;
@@ -83,6 +140,7 @@
     quiz.addEventListener('submit', (e) => {
       e.preventDefault();
       const text = L.quiz + '\n' + answers().map(([k, v]) => `• ${k}: ${v}`).join('\n');
+      lead();
       window.open(waLink(text), '_blank', 'noopener');
     });
     show(0);
